@@ -1,0 +1,89 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: caramel-store
+  labels:
+    app.kubernetes.io/part-of: caramel-vanilla
+    app.kubernetes.io/component: store
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# OpenShift router traffic is selected by the platform ingress namespace label.
+# Some distributions require an additional site-specific ipBlock for a
+# host-networked router; add that locally if the platform does not preserve the
+# namespace selector on router traffic.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-public-router
+  namespace: caramel-store
+  labels:
+    app.kubernetes.io/part-of: caramel-vanilla
+    app.kubernetes.io/component: store
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: caramel-store
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              policy-group.network.openshift.io/ingress: ""
+      ports:
+        - port: 8080
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring
+  namespace: caramel-store
+  labels:
+    app.kubernetes.io/part-of: caramel-vanilla
+    app.kubernetes.io/component: store
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: caramel-store
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-monitoring
+      ports:
+        - port: 9090
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: caramel-store
+  labels:
+    app.kubernetes.io/part-of: caramel-vanilla
+    app.kubernetes.io/component: store
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: openshift-dns
+          podSelector:
+            matchLabels:
+              dns.operator.openshift.io/daemonset-dns: default
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP

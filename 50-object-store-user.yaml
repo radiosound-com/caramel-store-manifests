@@ -1,0 +1,21 @@
+# Example scoped Ceph RGW identity for selected artifacts.
+# Set spec.store to the name of an existing CephObjectStore before applying.
+# The generated Secret must remain in the storage operator namespace until an
+# application deployment needs a deliberately copied namespace-local
+# credential. No release-signing key belongs here.
+apiVersion: ceph.rook.io/v1
+kind: CephObjectStoreUser
+metadata:
+  name: caramel-store-publisher
+  namespace: rook-ceph
+  labels:
+    app.kubernetes.io/part-of: caramel-vanilla
+    app.kubernetes.io/component: artifact-storage
+spec:
+  displayName: Caramel Store selected-artifact publisher
+  opMask:
+    - read
+    - write
+  quotas:
+    maxBuckets: 1
+  store: caramel-artifacts
