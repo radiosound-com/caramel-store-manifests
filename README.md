@@ -8,6 +8,12 @@ The application source now lives in the separate
 [caramel-store-api](https://github.com/radiosound-com/caramel-store-api)
 repository. This repository should contain deployment resources only.
 
+The MVP import policy is network-public but application-authenticated: the
+`/v1/import` Route is reachable through the public hostname, while the API
+requires the scoped `Authorization: Bearer` token. This is intentionally a
+simple first boundary; rate limiting and stronger edge authentication can be
+added later.
+
 The planned public hostname is
 `caramel-vanilla-store.apps.radiosound.com`. The `*.apps` zone is protected by
 Cloudflare, so the import protocol must not depend on one request carrying more
@@ -24,9 +30,19 @@ This expects an OpenShift/OKD cluster with the `rook-ceph-block` StorageClass,
 the standard OpenShift ingress and monitoring namespace labels, and a Rook
 CephObjectStore. Review every platform-specific value before applying:
 
+Create the two runtime Secrets out-of-band first, then apply the resources:
+
 ```sh
+kubectl -n caramel-store create secret generic caramel-store-catalog-verification-key \
+  --from-file=catalog-public.pem=/secure/path/catalog-public.pem
+kubectl -n caramel-store create secret generic caramel-store-import-token \
+  --from-file=import-token=/secure/path/import-token
 kubectl apply -k .
 ```
+
+Do not commit the generated Secret YAML or the source files. Keep the source
+values in the approved external password manager and use Kubernetes Secrets as
+runtime copies.
 
 Before applying `50-object-store-user.yaml`, set `spec.store` to the name of
 an existing `CephObjectStore`. Create the selected-artifact bucket and its
@@ -59,22 +75,19 @@ the completed bundle before the atomic catalog import.
 - No default CPU limit is imposed, avoiding accidental throttling.
 - Catalog data uses a 20 GiB ReadWriteOnce PVC.
 - All traffic is denied by default; ingress, monitoring, and DNS are explicit.
-- The Service is internal until an API image and route contract exist.
+- The Service and Routes use the pinned API image and the planned public host.
 - The object-store identity is not a release-signing identity.
 
 ## Next implementation steps
 
-1. Build and publish the [catalog API](https://github.com/radiosound-com/caramel-store-api)
-   image with a restricted-compatible container, HTTP port 8080, health
-   endpoints, optional metrics on 9090, and an atomic SQLite import transaction.
-2. Define the signed import-bundle schema: signature, freshness, provenance,
+1. Define the signed import-bundle schema: signature, freshness, provenance,
    checksums, package policy, idempotency key, and chunked-upload metadata.
-3. Build the external scanner uploader with retry, bounded rate, resumable
+2. Build the external scanner uploader with retry, bounded rate, resumable
    chunks, and no Kubernetes or database credentials.
-4. Keep public catalog reads and authenticated/VPN-protected imports on
-   separate Routes or equivalent ingress policies.
-5. Add the Deployment, ServiceMonitor, routes, scoped object-store Secret,
-   backup job, and restore test after the API contract is fixed.
-6. Publish a signed filtered catalog/index and document upstream F-Droid
+3. Run the signed/invalid/stale/restart acceptance tests through the public
+   routes, then add the catalog backup job and restore test.
+4. Add the scoped object-store Secret only if the API later needs artifact
+   storage.
+5. Publish a signed filtered catalog/index and document upstream F-Droid
    links, selected mirrors, Aurora as an optional source, and compatibility
    review results.

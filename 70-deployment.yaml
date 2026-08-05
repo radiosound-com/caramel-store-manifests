@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: caramel-store
+  namespace: caramel-store
+  labels:
+    app.kubernetes.io/part-of: caramel-vanilla
+    app.kubernetes.io/component: store
+    app.kubernetes.io/name: caramel-store
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: caramel-store
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: caramel-vanilla
+        app.kubernetes.io/component: store
+        app.kubernetes.io/name: caramel-store
+    spec:
+      serviceAccountName: caramel-store
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: api
+          image: ghcr.io/radiosound-com/caramel-store-api@sha256:ce94434bda637e354cc7bafef64c28ee9c44b73629070e655ac97b06b89bafe4
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          env:
+            - name: CARAMEL_STORE_MAX_AGE_HOURS
+              value: "48"
+            - name: CARAMEL_STORE_MAX_BUNDLE_BYTES
+              value: "16777216"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 24
+          volumeMounts:
+            - name: catalog-data
+              mountPath: /data/catalog
+            - name: api-secrets
+              mountPath: /etc/caramel-store
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: catalog-data
+          persistentVolumeClaim:
+            claimName: catalog-data
+        - name: api-secrets
+          projected:
+            defaultMode: 0440
+            sources:
+              - secret:
+                  name: caramel-store-catalog-verification-key
+                  items:
+                    - key: catalog-public.pem
+                      path: catalog-public.pem
+              - secret:
+                  name: caramel-store-import-token
+                  items:
+                    - key: import-token
+                      path: import-token
+        - name: tmp
+          emptyDir: {}

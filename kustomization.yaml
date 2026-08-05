@@ -7,3 +7,7 @@ resources:
   - 30-network-policy.yaml
   - 40-service.yaml
   - 50-object-store-user.yaml
+  - 60-route-public.example.yaml
+  - 61-route-import.example.yaml
+  - 70-deployment.yaml
+  - 80-servicemonitor.yaml
