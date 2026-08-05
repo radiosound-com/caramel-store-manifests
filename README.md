@@ -4,6 +4,11 @@ This repository contains the small, non-HA Kubernetes foundation for the
 Caramel Store catalog service. It deliberately does not deploy the scanner,
 the catalog API image, a public Route, or a release-signing service.
 
+The planned public hostname is
+`caramel-vanilla-store.apps.radiosound.com`. The `*.apps` zone is protected by
+Cloudflare, so the import protocol must not depend on one request carrying more
+than 100 MB.
+
 The scanner should produce a signed and validated import bundle outside the
 cluster. The cluster side should accept only a scoped upload, validate the
 bundle again, import it atomically into the catalog, and serve public catalog
@@ -29,6 +34,19 @@ The network policy intentionally contains no site-specific node or router IP
 addresses. Add a local `ipBlock` only when the target platform requires it for
 host-networked ingress.
 
+## Route and upload contract
+
+Use `60-route-public.example.yaml` as the public catalog Route after the API
+Deployment has endpoints. Public catalog reads may use the planned hostname;
+the staging/import endpoint must remain separately protected by VPN, mTLS, or
+an equivalent access policy even when it shares that hostname.
+
+Bundles larger than 100 MB must use a resumable, chunked upload protocol. The
+scanner and importer should agree on an upload-session identifier, bounded
+chunk size, per-chunk SHA-256, final bundle SHA-256, ordered assembly, retry,
+and cleanup of abandoned sessions. Signature and schema validation happen on
+the completed bundle before the atomic catalog import.
+
 ## Foundation posture
 
 - Namespace Pod Security enforcement is `restricted`.
@@ -42,17 +60,17 @@ host-networked ingress.
 
 ## Next implementation steps
 
-1. Define the signed import-bundle schema: signature, freshness, provenance,
-   checksums, package policy, and idempotency key.
-2. Build the external scanner uploader with retry, bounded rate, and no
-   Kubernetes or database credentials.
-3. Ship the catalog API image with a restricted-compatible container, HTTP
-   port 8080, health endpoints, optional metrics on 9090, and an atomic import
-   transaction backed by SQLite or the selected catalog database.
+1. Build and publish the catalog API image with a restricted-compatible
+   container, HTTP port 8080, health endpoints, optional metrics on 9090,
+   and an atomic import transaction backed by SQLite.
+2. Define the signed import-bundle schema: signature, freshness, provenance,
+   checksums, package policy, idempotency key, and chunked-upload metadata.
+3. Build the external scanner uploader with retry, bounded rate, resumable
+   chunks, and no Kubernetes or database credentials.
 4. Keep public catalog reads and authenticated/VPN-protected imports on
-   separate Routes.
+   separate Routes or equivalent ingress policies.
 5. Add the Deployment, ServiceMonitor, routes, scoped object-store Secret,
-   backup job, and restore test only after the API contract is fixed.
+   backup job, and restore test after the API contract is fixed.
 6. Publish a signed filtered catalog/index and document upstream F-Droid
    links, selected mirrors, Aurora as an optional source, and compatibility
    review results.
