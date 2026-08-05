@@ -4,6 +4,10 @@ This repository contains the small, non-HA Kubernetes foundation for the
 Caramel Store catalog service. It deliberately does not deploy the scanner,
 the catalog API image, a public Route, or a release-signing service.
 
+The application source now lives in the separate
+[caramel-store-api](https://github.com/radiosound-com/caramel-store-api)
+repository. This repository should contain deployment resources only.
+
 The planned public hostname is
 `caramel-vanilla-store.apps.radiosound.com`. The `*.apps` zone is protected by
 Cloudflare, so the import protocol must not depend on one request carrying more
@@ -60,9 +64,9 @@ the completed bundle before the atomic catalog import.
 
 ## Next implementation steps
 
-1. Build and publish the catalog API image with a restricted-compatible
-   container, HTTP port 8080, health endpoints, optional metrics on 9090,
-   and an atomic import transaction backed by SQLite.
+1. Build and publish the [catalog API](https://github.com/radiosound-com/caramel-store-api)
+   image with a restricted-compatible container, HTTP port 8080, health
+   endpoints, optional metrics on 9090, and an atomic SQLite import transaction.
 2. Define the signed import-bundle schema: signature, freshness, provenance,
    checksums, package policy, idempotency key, and chunked-upload metadata.
 3. Build the external scanner uploader with retry, bounded rate, resumable
