@@ -44,11 +44,12 @@ Do not commit the generated Secret YAML or the source files. Keep the source
 values in the approved external password manager and use Kubernetes Secrets as
 runtime copies.
 
-Before applying `50-object-store-user.yaml`, set `spec.store` to the name of
-an existing `CephObjectStore`. Create the selected-artifact bucket and its
-read/publish policy as a separate controlled step. Copy only the required
-object-store credential into the application namespace when the application
-deployment is ready.
+`50-object-store-user.yaml` is an optional example and is intentionally not in
+the default kustomization. If the API later needs artifact storage, set
+`spec.store` to the name of an existing `CephObjectStore`, create the
+selected-artifact bucket and its read/publish policy as a separate controlled
+step, and copy only the required object-store credential into the application
+namespace.
 
 The network policy intentionally contains no site-specific node or router IP
 addresses. Add a local `ipBlock` only when the target platform requires it for
