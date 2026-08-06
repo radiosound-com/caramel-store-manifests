@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: caramel-store-ui
+  namespace: caramel-store
+  labels:
+    app.kubernetes.io/part-of: caramel-vanilla
+    app.kubernetes.io/component: store-ui
+    app.kubernetes.io/name: caramel-store-ui
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: caramel-store-ui
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP

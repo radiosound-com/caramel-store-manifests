@@ -1,5 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+namespace: caramel-store
 resources:
   - 00-namespace.yaml
   - 10-guardrails.yaml
@@ -10,3 +11,18 @@ resources:
   - 61-route-import.example.yaml
   - 70-deployment.yaml
   - 80-servicemonitor.yaml
+  - 90-ui-service.yaml
+  - 91-ui-route.yaml
+  - 92-ui-deployment.yaml
+  - 93-ui-network-policy.yaml
+
+configMapGenerator:
+  - name: caramel-store-ui-assets
+    files:
+      - ui/index.html
+      - ui/app.js
+      - ui/styles.css
+      - ui/nginx.conf
+
+generatorOptions:
+  disableNameSuffixHash: true

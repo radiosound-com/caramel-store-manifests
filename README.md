@@ -1,12 +1,19 @@
-# Caramel Store Kubernetes foundation
+# Caramel Store Kubernetes deployment
 
-This repository contains the small, non-HA Kubernetes foundation for the
-Caramel Store catalog service. It deliberately does not deploy the scanner,
-the catalog API image, a public Route, or a release-signing service.
+This repository contains the small, non-HA Kubernetes deployment for the
+Caramel Store catalog API and its static catalog UI. The scanner remains on
+littleboy outside Kubernetes. No signing key, import token, or APK is part of
+this repository.
 
 The application source now lives in the separate
 [caramel-store-api](https://github.com/radiosound-com/caramel-store-api)
 repository. This repository should contain deployment resources only.
+
+The UI source lives in
+[caramel-store-ui](https://github.com/radiosound-com/caramel-store-ui). The
+small static asset set is copied into `ui/` here so `kubectl apply -k .` is a
+self-contained, reproducible deployment. The UI reads only public catalog GET
+endpoints and never contains import controls or credentials.
 
 The MVP import policy is network-public but application-authenticated: the
 `/v1/import` Route is reachable through the public hostname, while the API
@@ -18,6 +25,11 @@ The planned public hostname is
 `caramel-vanilla-store.apps.radiosound.com`. The `*.apps` zone is protected by
 Cloudflare, so the import protocol must not depend on one request carrying more
 than 100 MB.
+
+The root Route serves the UI. The longer `/v1/catalog` paths are handled by the
+API Routes on the same hostname, keeping browser requests same-origin and
+avoiding CORS. `/v1/import` remains a separate bearer-authenticated API Route;
+the UI does not reference it.
 
 The scanner should produce a signed and validated import bundle outside the
 cluster. The cluster side should accept only a scoped upload, validate the
@@ -38,6 +50,15 @@ kubectl -n caramel-store create secret generic caramel-store-catalog-verificatio
 kubectl -n caramel-store create secret generic caramel-store-import-token \
   --from-file=import-token=/secure/path/import-token
 kubectl apply -k .
+```
+
+The kustomization deploys the API and UI Services, the API and UI Routes, the
+API Deployment, the static Nginx UI Deployment, health probes, resource limits,
+and the UI router NetworkPolicy. UI asset changes should be followed by a
+Deployment restart so Nginx reloads the updated ConfigMap:
+
+```sh
+kubectl -n caramel-store rollout restart deployment/caramel-store-ui
 ```
 
 Do not commit the generated Secret YAML or the source files. Keep the source
@@ -78,6 +99,9 @@ the completed bundle before the atomic catalog import.
 - All traffic is denied by default; ingress, monitoring, and DNS are explicit.
 - The Service and Routes use the pinned API image and the planned public host.
 - The object-store identity is not a release-signing identity.
+- The UI requests 10m CPU/32Mi memory and is limited to 100m CPU/128Mi memory.
+- The UI Nginx health endpoint is `/healthz`; static assets are cacheable for
+  five minutes and the HTML shell is revalidated.
 
 ## Next implementation steps
 
