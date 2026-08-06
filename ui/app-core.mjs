@@ -7,6 +7,12 @@ export const CAPABILITIES = [
   ["car_app_service", "Car app service"],
 ];
 
+export const CAPABILITY_EXPLANATIONS = {
+  automotive_candidate: "Broad scanner gate: at least one Automotive-related manifest signal was found.",
+  automotive_feature: "The APK declares Android's android.hardware.type.automotive feature.",
+  car_app_service: "The APK contains an AndroidX for Cars CarAppService signal.",
+};
+
 export class ApiError extends Error {
   constructor(message, status = 0) {
     super(message);

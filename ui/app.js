@@ -1,5 +1,6 @@
 import {
   CAPABILITIES,
+  CAPABILITY_EXPLANATIONS,
   classifyError,
   detailViewModel,
   displayValue,
@@ -93,7 +94,7 @@ function freshnessStamp(catalog) {
   return stamp;
 }
 
-function capabilityList(findings) {
+function capabilityList(findings, explain = false) {
   const list = createElement("ul", "capability-list");
   for (const [key, label] of CAPABILITIES) {
     const item = createElement("li", "capability-item");
@@ -103,6 +104,7 @@ function capabilityList(findings) {
       createElement("span", null, label),
       createElement("strong", detected ? "capability-yes" : "capability-no", detected ? "Detected" : "Not detected"),
     );
+    if (explain) item.append(createElement("span", "capability-explanation", CAPABILITY_EXPLANATIONS[key]));
     list.append(item);
   }
   return list;
@@ -122,14 +124,15 @@ function entryCard(entry, stale) {
   const findings = entry.manifest_findings || {};
   const summary = findings.summary || findings.description || entry.summary;
   if (summary) card.append(createElement("p", null, summary));
-  card.append(capabilityList(findings));
 
   const meta = createElement("div", "card-meta");
   meta.append(
     createElement("span", null, versionLabel(entry)),
     createElement("span", null, formatBytes(entry.downloaded_size)),
   );
-  card.append(meta, createElement("div", "card-arrow", "View package →"));
+  const detailLink = createElement("a", "card-arrow", "View package →");
+  detailLink.href = link.href;
+  card.append(meta, detailLink);
   return card;
 }
 
@@ -219,7 +222,11 @@ function renderFindings(findings) {
 
 function renderCapabilities(findings) {
   const section = createElement("section", "detail-section");
-  section.append(createElement("h2", null, "Automotive capabilities"), capabilityList(findings));
+  section.append(
+    createElement("h2", null, "Automotive scan signals"),
+    createElement("p", "section-note", "These are manifest signals used for catalog screening, not a certification of full Automotive compatibility."),
+    capabilityList(findings, true),
+  );
   return section;
 }
 

@@ -181,7 +181,8 @@ h3 { font-size: 1.15rem; }
 .app-id { margin-top: 0.35rem; color: var(--muted); font-size: 0.78rem; overflow-wrap: anywhere; }
 .badge { padding: 0.3rem 0.55rem; border-radius: 999px; color: var(--caramel-dark); background: #ffe9d1; font-size: 0.72rem; font-weight: 800; white-space: nowrap; }
 .card-meta { display: flex; flex-wrap: wrap; gap: 0.45rem 0.8rem; margin-top: auto; color: var(--muted); font-size: 0.82rem; }
-.card-arrow { margin-top: 1.1rem; font-weight: 750; }
+.card-arrow { margin-top: 1.1rem; color: var(--caramel-dark); font-weight: 750; text-decoration: none; }
+.card-arrow:hover { text-decoration: underline; text-underline-offset: 0.2em; }
 
 .state-card { padding: 2rem; }
 .state-card h1 { font-size: clamp(1.8rem, 4vw, 3rem); }
@@ -213,6 +214,8 @@ h3 { font-size: 1.15rem; }
 .capability-dot.detected { background: #477052; box-shadow: 0 0 0 0.2rem #e5f1e6; }
 .capability-yes { color: #477052; font-size: 0.82rem; }
 .capability-no { color: var(--muted); font-size: 0.82rem; }
+.capability-explanation { grid-column: 2 / -1; color: var(--muted); font-size: 0.8rem; line-height: 1.45; }
+.section-note { margin: -0.4rem 0 1rem; color: var(--muted); line-height: 1.5; }
 .findings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.7rem; margin: 0; }
 .finding-item { padding: 0.8rem; border: 1px solid var(--line); border-radius: 0.7rem; background: #fff9f0; }
 .finding-item dt { color: var(--muted); font-size: 0.75rem; }
