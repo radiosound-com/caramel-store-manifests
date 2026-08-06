@@ -45,6 +45,24 @@ function safeExternalLink(href, label, className = "inline-link") {
   return link;
 }
 
+function safeMetadataImage(href, alt = "", className = "app-icon") {
+  const url = safeHttpsUrl(href);
+  if (!url) return null;
+  const image = document.createElement("img");
+  image.className = className;
+  image.src = url;
+  image.alt = alt;
+  image.loading = "lazy";
+  image.decoding = "async";
+  image.referrerPolicy = "no-referrer";
+  return image;
+}
+
+function entryDisplayName(entry) {
+  const metadata = entry?.metadata || {};
+  return text(metadata.display_name || entry.name || entry.app_name || entry.package_name);
+}
+
 function showState(title, message, { error = false, retry = false, missing = false } = {}) {
   clearApp();
   const card = createElement("section", `state-card${error ? " error-card" : ""}`);
@@ -114,15 +132,19 @@ function entryCard(entry, stale) {
   const card = createElement("article", "app-card");
   const top = createElement("div", "card-top");
   const titleBlock = createElement("div");
-  const link = createElement("a", null, text(entry.name || entry.app_name || entry.package_name));
+  const link = createElement("a", null, entryDisplayName(entry));
   link.href = `#/package/${encodeURIComponent(entry.package_name)}`;
   const id = createElement("div", "app-id", text(entry.package_name));
   titleBlock.append(link, id);
-  top.append(titleBlock, createElement("span", `badge${stale ? " stale" : ""}`, stale ? "Stale data" : "Reviewed"));
+  const identity = createElement("div", "card-identity");
+  const icon = safeMetadataImage(entry.metadata?.icon_url);
+  if (icon) identity.append(icon);
+  identity.append(titleBlock);
+  top.append(identity, createElement("span", `badge${stale ? " stale" : ""}`, stale ? "Stale data" : "Reviewed"));
   card.append(top);
 
   const findings = entry.manifest_findings || {};
-  const summary = findings.summary || findings.description || entry.summary;
+  const summary = entry.metadata?.summary || findings.summary || findings.description || entry.summary;
   if (summary) card.append(createElement("p", null, summary));
 
   const meta = createElement("div", "card-meta");
@@ -230,6 +252,26 @@ function renderCapabilities(findings) {
   return section;
 }
 
+function renderMetadataDetails(metadata) {
+  const sections = [];
+  if (metadata.description) {
+    const section = createElement("section", "detail-section");
+    section.append(createElement("h2", null, "About this app"), createElement("p", "app-description", metadata.description));
+    sections.push(section);
+  }
+  const screenshots = Array.isArray(metadata.screenshot_urls)
+    ? metadata.screenshot_urls.map((url, index) => safeMetadataImage(url, `Screenshot ${index + 1}`, "app-screenshot")).filter(Boolean)
+    : [];
+  if (screenshots.length) {
+    const section = createElement("section", "detail-section");
+    const gallery = createElement("div", "screenshot-grid");
+    gallery.append(...screenshots);
+    section.append(createElement("h2", null, "Screenshots"), gallery);
+    sections.push(section);
+  }
+  return sections;
+}
+
 function renderUpstreamLinks(entry) {
   const section = createElement("section", "detail-section");
   section.append(createElement("h2", null, "Upstream links"));
@@ -253,6 +295,7 @@ function renderUpstreamLinks(entry) {
 
 function renderDetailView(entry, catalog) {
   const model = detailViewModel(entry, catalog);
+  const metadata = model.metadata;
   clearApp();
   const back = createElement("a", "back-link", "← Back to catalog");
   back.href = "#/";
@@ -261,24 +304,31 @@ function renderDetailView(entry, catalog) {
   const titleBlock = createElement("div");
   titleBlock.append(
     createElement("p", "eyebrow", "Reviewed application"),
-    createElement("h1", null, text(entry.name || entry.app_name || entry.package_name)),
+    createElement("h1", null, entryDisplayName(entry)),
     createElement("div", "app-id", text(entry.package_name)),
   );
-  heading.append(titleBlock, createElement("span", "badge", "Reviewed"), freshnessStamp(catalog));
+  const identity = createElement("div", "detail-identity");
+  const icon = safeMetadataImage(metadata.icon_url, "", "app-icon app-icon-large");
+  if (icon) identity.append(icon);
+  identity.append(titleBlock);
+  heading.append(identity, createElement("span", "badge", "Reviewed"), freshnessStamp(catalog));
   card.append(heading);
 
   const findings = model.findings;
-  const intro = findings.summary || findings.description || entry.summary;
+  const intro = metadata.summary || findings.summary || findings.description || entry.summary;
   if (intro) card.append(createElement("p", "detail-intro", intro));
 
   const details = createElement("div", "detail-grid");
-  details.append(
+  const detailFields = [
     field("Version", versionLabel(entry)),
     field("APK size", formatBytes(entry.downloaded_size)),
     field("SHA-256", entry.sha256, "hash-value"),
     field("APK URL", safeExternalLink(entry.canonical_apk_url || entry.apk_url, "Open APK upstream ↗", "inline-link")),
-  );
-  card.append(details, renderCapabilities(findings), renderFindings(findings), renderUpstreamLinks(entry));
+  ];
+  if (Array.isArray(metadata.categories) && metadata.categories.length) detailFields.push(field("Category", metadata.categories.join(", ")));
+  if (metadata.license) detailFields.push(field("License", metadata.license));
+  details.append(...detailFields);
+  card.append(details, ...renderMetadataDetails(metadata), renderCapabilities(findings), renderFindings(findings), renderUpstreamLinks(entry));
   app.append(back, card);
 }
 

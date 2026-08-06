@@ -118,7 +118,8 @@ export function catalogViewModel(catalog, query = "") {
   const entries = Array.isArray(catalog?.entries) ? catalog.entries : [];
   const normalizedQuery = String(query).trim().toLowerCase();
   const visibleEntries = entries.filter((entry) => {
-    const haystack = `${entry.name || ""} ${entry.app_name || ""} ${entry.package_name || ""} ${versionLabel(entry)}`.toLowerCase();
+    const metadata = entry.metadata || {};
+    const haystack = `${metadata.display_name || ""} ${metadata.summary || ""} ${entry.name || ""} ${entry.app_name || ""} ${entry.package_name || ""} ${versionLabel(entry)}`.toLowerCase();
     return haystack.includes(normalizedQuery);
   });
   return {
@@ -132,6 +133,7 @@ export function catalogViewModel(catalog, query = "") {
 export function detailViewModel(entry, catalog = null) {
   return {
     entry,
+    metadata: entry?.metadata || {},
     findings: entry?.manifest_findings || {},
     capabilities: capabilityValues(entry?.manifest_findings || {}),
     upstream: upstreamEntries(entry?.upstream_urls || {}),
