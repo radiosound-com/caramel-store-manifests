@@ -21,6 +21,7 @@ configMapGenerator:
     files:
       - ui/index.html
       - ui/app.js
+      - ui/app-core.mjs
       - ui/styles.css
       - ui/nginx.conf
 

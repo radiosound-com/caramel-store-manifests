@@ -93,6 +93,8 @@ spec:
                 path: index.html
               - key: app.js
                 path: app.js
+              - key: app-core.mjs
+                path: app-core.mjs
               - key: styles.css
                 path: styles.css
         - name: ui-nginx-config
