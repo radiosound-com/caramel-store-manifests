@@ -31,7 +31,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: api
-          image: ghcr.io/radiosound-com/caramel-store-api@sha256:ce94434bda637e354cc7bafef64c28ee9c44b73629070e655ac97b06b89bafe4
+          image: ghcr.io/radiosound-com/caramel-store-api@sha256:f82228aba96c92d8627bc4517670d7bfa41fd9684981bc406fd810b77a190913
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
