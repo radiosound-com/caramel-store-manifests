@@ -83,11 +83,20 @@ Deployment has endpoints. Public catalog reads may use the planned hostname;
 the staging/import endpoint must remain separately protected by VPN, mTLS, or
 an equivalent access policy even when it shares that hostname.
 
-Bundles larger than 100 MB must use a resumable, chunked upload protocol. The
-scanner and importer should agree on an upload-session identifier, bounded
-chunk size, per-chunk SHA-256, final bundle SHA-256, ordered assembly, retry,
-and cleanup of abandoned sessions. Signature and schema validation happen on
-the completed bundle before the atomic catalog import.
+The import Route is intentionally public but requires the scoped bearer token;
+it must not be treated as anonymous just because it is reachable through the
+public hostname. Bundles larger than 100 MB must use a resumable, chunked
+upload protocol. The scanner and importer should agree on an upload-session
+identifier, bounded chunk size, per-chunk SHA-256, final bundle SHA-256,
+ordered assembly, retry, and cleanup of abandoned sessions. Signature and
+schema validation happen on the completed bundle before the atomic catalog
+import.
+
+The API's Prometheus endpoint exposes import attempts, rejections, failures,
+payload/signature byte counters, publish counts, active catalog entry count,
+active revision, and catalog file sizes. Keep the existing `ServiceMonitor`
+enabled and alert on rejected/failed imports; graph the byte counters and
+revision information to observe scanner and catalog changes.
 
 ## Foundation posture
 
@@ -110,7 +119,10 @@ the completed bundle before the atomic catalog import.
 2. Build the external scanner uploader with retry, bounded rate, resumable
    chunks, and no Kubernetes or database credentials.
 3. Run the signed/invalid/stale/restart acceptance tests through the public
-   routes, then add the catalog backup job and restore test.
+   routes, then verify that the periodic full-cluster backup includes the
+   `caramel-store` namespace, its Secrets, and the `catalog-data` PVC; perform
+   a restore test through the cluster backup agent rather than creating an
+   application-specific backup schedule here.
 4. Add the scoped object-store Secret only if the API later needs artifact
    storage.
 5. Publish a signed filtered catalog/index and document upstream F-Droid
