@@ -138,6 +138,7 @@ metadata:
     app.kubernetes.io/component: app-repository
     app.kubernetes.io/name: caramel-app-repository
   annotations:
+    haproxy.router.openshift.io/disable_cookies: "true"
     haproxy.router.openshift.io/timeout: 5m
 spec:
   host: caramel-vanilla-store.apps.radiosound.com

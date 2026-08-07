@@ -6,6 +6,8 @@ kind: Route
 metadata:
   name: caramel-store-ui
   namespace: caramel-store
+  annotations:
+    haproxy.router.openshift.io/disable_cookies: "true"
   labels:
     app.kubernetes.io/part-of: caramel-vanilla
     app.kubernetes.io/component: store-ui
