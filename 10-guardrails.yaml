@@ -16,7 +16,7 @@ spec:
     persistentvolumeclaims: "3"
     requests.storage: 50Gi
     services: "4"
-    count/deployments.apps: "2"
+    count/deployments.apps: "3"
     count/jobs.batch: "2"
 ---
 apiVersion: v1

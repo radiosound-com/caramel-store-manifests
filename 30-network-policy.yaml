@@ -87,3 +87,9 @@ spec:
           protocol: UDP
         - port: 53
           protocol: TCP
+        # OpenShift's dns-default Service translates port 53 to 5353 on the
+        # selected pods; network policy is evaluated against the target port.
+        - port: 5353
+          protocol: UDP
+        - port: 5353
+          protocol: TCP

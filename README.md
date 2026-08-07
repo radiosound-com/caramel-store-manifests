@@ -9,6 +9,12 @@ The application source now lives in the separate
 [caramel-store-api](https://github.com/radiosound-com/caramel-store-api)
 repository. This repository should contain deployment resources only.
 
+The signed first-party repository source and release tooling live in
+[caramel-app-repository](https://github.com/radiosound-com/caramel-app-repository).
+Its generated static files are published to a dedicated Ceph RGW bucket. This
+manifests repository contains only the credential-free HTTPS read gateway; it
+contains no APKs, publisher credentials, or release-signing keys.
+
 The UI source lives in
 [caramel-store-ui](https://github.com/radiosound-com/caramel-store-ui). The
 small static asset set is copied into `ui/` here so `kubectl apply -k .` is a
@@ -29,7 +35,9 @@ than 100 MB.
 The root Route serves the UI. The longer `/v1/catalog` paths are handled by the
 API Routes on the same hostname, keeping browser requests same-origin and
 avoiding CORS. `/v1/import` remains a separate bearer-authenticated API Route;
-the UI does not reference it.
+the UI does not reference it. The longer `/fdroid/repo` Route serves the
+F-Droid-compatible and Caramel-pinned repository indexes and immutable APK
+objects from RGW on the same HTTPS hostname.
 
 The scanner should produce a signed and validated import bundle outside the
 cluster. The cluster side should accept only a scoped upload, validate the
@@ -52,29 +60,47 @@ kubectl -n caramel-store create secret generic caramel-store-import-token \
 kubectl apply -k .
 ```
 
-The kustomization deploys the API and UI Services, the API and UI Routes, the
-API Deployment, the static Nginx UI Deployment, health probes, resource limits,
-and the UI router NetworkPolicy. UI asset changes should be followed by a
-Deployment restart so Nginx reloads the updated ConfigMap:
+The kustomization deploys the API, UI, and read-only app-repository Services
+and Routes; the API Deployment; static Nginx UI and repository-gateway
+Deployments; health probes; resource limits; and their NetworkPolicies. UI or
+gateway configuration changes should be followed by a Deployment restart so
+Nginx reloads the updated ConfigMap:
 
 ```sh
 kubectl -n caramel-store rollout restart deployment/caramel-store-ui
+kubectl -n caramel-store rollout restart deployment/caramel-app-repository
 ```
 
 Do not commit the generated Secret YAML or the source files. Keep the source
 values in the approved external password manager and use Kubernetes Secrets as
 runtime copies.
 
-`50-object-store-user.yaml` is an optional example and is intentionally not in
-the default kustomization. If the API later needs artifact storage, set
-`spec.store` to the name of an existing `CephObjectStore`, create the
-selected-artifact bucket and its read/publish policy as a separate controlled
-step, and copy only the required object-store credential into the application
-namespace.
+`50-object-store-user.yaml` is the optional, narrowly scoped RGW publisher and
+is intentionally not in the default kustomization. Its generated credential
+stays in the storage-operator namespace and is used only by the controlled
+release workstation. Neither the API nor either Nginx Deployment receives it.
+The gateway reaches only anonymous GET/HEAD objects below
+`caramel-apps/fdroid/repo` over the internal RGW service.
 
-The network policy intentionally contains no site-specific node or router IP
-addresses. Add a local `ipBlock` only when the target platform requires it for
-host-networked ingress.
+The checked-in router/node `ipBlock` entries are production-cluster-specific
+because this OKD router uses host networking. DNS egress includes OpenShift's
+translated pod port 5353 as well as service port 53. Revalidate these values
+before applying the manifests to another cluster.
+
+## First-party repository route
+
+Production reads are available at:
+
+```text
+https://caramel-vanilla-store.apps.radiosound.com/fdroid/repo/
+```
+
+The route supports byte ranges for large APK downloads, verifies the OpenShift
+service CA when proxying to RGW, disables request/response buffering, and does
+not permit bucket listing. APK objects are immutable and versioned; repository
+indexes and screenshots use short revalidation caching. Build and publication
+commands are documented in the separate repository source. Publication is a
+release operation and is not performed by `kubectl apply -k .`.
 
 ## Route and upload contract
 
@@ -111,6 +137,8 @@ revision information to observe scanner and catalog changes.
 - The UI requests 10m CPU/32Mi memory and is limited to 100m CPU/128Mi memory.
 - The UI Nginx health endpoint is `/healthz`; static assets are cacheable for
   five minutes and the HTML shell is revalidated.
+- The repository gateway has the same 10m/32Mi request and 100m/128Mi limit,
+  verifies its RGW upstream certificate, and contains no object-store secret.
 
 ## Next implementation steps
 
@@ -125,6 +153,5 @@ revision information to observe scanner and catalog changes.
    application-specific backup schedule here.
 4. Add the scoped object-store Secret only if the API later needs artifact
    storage.
-5. Publish a signed filtered catalog/index and document upstream F-Droid
-   links, selected mirrors, Aurora as an optional source, and compatibility
-   review results.
+5. Review scheduled first-party upstream-update issues and publish only after
+   package-specific Automotive tests pass.

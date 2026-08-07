@@ -1,0 +1,67 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-repository-public-router
+  namespace: caramel-store
+  labels:
+    app.kubernetes.io/part-of: caramel-vanilla
+    app.kubernetes.io/component: app-repository
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: caramel-app-repository
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              policy-group.network.openshift.io/ingress: ""
+        - ipBlock:
+            cidr: 192.168.1.46/32
+        - ipBlock:
+            cidr: 192.168.1.34/32
+        - ipBlock:
+            cidr: 192.168.1.35/32
+        - ipBlock:
+            cidr: 10.130.0.1/32
+        - ipBlock:
+            cidr: 10.130.0.2/32
+        - ipBlock:
+            cidr: 10.128.0.1/32
+        - ipBlock:
+            cidr: 10.128.0.2/32
+        - ipBlock:
+            cidr: 10.129.0.1/32
+        - ipBlock:
+            cidr: 10.129.0.2/32
+      ports:
+        - port: 8080
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-repository-rgw-egress
+  namespace: caramel-store
+  labels:
+    app.kubernetes.io/part-of: caramel-vanilla
+    app.kubernetes.io/component: app-repository
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: caramel-app-repository
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: rook-ceph
+          podSelector:
+            matchLabels:
+              app: rook-ceph-rgw
+              rook_object_store: mrdata-updates
+      ports:
+        - port: 443
+          protocol: TCP

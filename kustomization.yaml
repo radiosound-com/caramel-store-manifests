@@ -15,6 +15,8 @@ resources:
   - 91-ui-route.yaml
   - 92-ui-deployment.yaml
   - 93-ui-network-policy.yaml
+  - 94-repository-gateway.yaml
+  - 95-repository-network-policy.yaml
 
 configMapGenerator:
   - name: caramel-store-ui-assets
@@ -24,6 +26,9 @@ configMapGenerator:
       - ui/app-core.mjs
       - ui/styles.css
       - ui/nginx.conf
+  - name: caramel-app-repository-config
+    files:
+      - repository/nginx.conf
 
 generatorOptions:
   disableNameSuffixHash: true
