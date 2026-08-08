@@ -346,8 +346,10 @@ function renderDetailView(entry, catalog) {
   const actions = createElement("div", "detail-actions");
   const apk = safeExternalLink(entry.canonical_apk_url || entry.apk_url, "Download APK", "button-link");
   if (apk) actions.append(apk);
-  for (const item of upstreamEntries(entry.upstream_urls || {}).slice(0, 1)) {
-    const link = safeExternalLink(item.url, "View source", "button-link secondary");
+  const upstream = upstreamEntries(entry.upstream_urls || {});
+  const source = upstream.find((item) => item.key === "source_code") || upstream[0];
+  if (source) {
+    const link = safeExternalLink(source.url, "View source", "button-link secondary");
     if (link) actions.append(link);
   }
   if (actions.childElementCount) card.append(actions);
