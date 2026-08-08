@@ -1,4 +1,5 @@
 export const CATALOG_PATH = "/v1/catalog";
+export const FIRST_PARTY_INDEX_PATH = "/fdroid/repo/caramel-index-v1.json";
 export const STALE_AFTER_MS = 48 * 60 * 60 * 1000;
 
 export const CAPABILITIES = [
@@ -130,6 +131,37 @@ export function catalogViewModel(catalog, query = "") {
   };
 }
 
+export function mergeCatalogs(publicCatalog, firstPartyCatalog, notice = "") {
+  const entries = new Map();
+  for (const catalog of [publicCatalog, firstPartyCatalog]) {
+    for (const entry of catalog?.entries || []) {
+      if (entry?.package_name) entries.set(entry.package_name, entry);
+    }
+  }
+  const sorted = [...entries.values()].sort((left, right) =>
+    entryName(left).localeCompare(entryName(right), undefined, { sensitivity: "base" }),
+  );
+  const generatedAt = [publicCatalog?.generated_at, firstPartyCatalog?.generated_at]
+    .filter(Boolean)
+    .sort()
+    .at(-1) || "";
+  const source = [publicCatalog?.source, firstPartyCatalog?.source]
+    .filter(Boolean)
+    .join(" + ") || "Caramel Store";
+  return {
+    schema_version: 1,
+    generated_at: generatedAt,
+    source,
+    entries: sorted,
+    notice,
+  };
+}
+
+function entryName(entry) {
+  const metadata = entry?.metadata || {};
+  return String(metadata.display_name || entry?.name || entry?.app_name || entry?.package_name || "");
+}
+
 export function detailViewModel(entry, catalog = null) {
   return {
     entry,
@@ -179,6 +211,38 @@ export async function loadCatalog(fetchImpl = globalThis.fetch) {
     throw new ApiError("The catalog API returned an invalid catalog.");
   }
   return catalog;
+}
+
+export async function loadFirstPartyCatalog(fetchImpl = globalThis.fetch) {
+  const index = await requestJson(fetchImpl, FIRST_PARTY_INDEX_PATH);
+  if (!index || !Array.isArray(index.packages)) {
+    throw new ApiError("The first-party repository returned an invalid index.");
+  }
+  return {
+    schema_version: index.schema_version,
+    generated_at: index.generated_at,
+    source: index.repository?.name || "Caramel App Repository",
+    entries: index.packages,
+  };
+}
+
+export async function loadCombinedCatalog(fetchImpl = globalThis.fetch) {
+  const results = await Promise.allSettled([
+    loadCatalog(fetchImpl),
+    loadFirstPartyCatalog(fetchImpl),
+  ]);
+  const publicCatalog = results[0].status === "fulfilled" ? results[0].value : null;
+  const firstPartyCatalog = results[1].status === "fulfilled" ? results[1].value : null;
+  if (!publicCatalog && !firstPartyCatalog) {
+    throw results[0].reason || results[1].reason || new ApiError("No catalog source could be reached.");
+  }
+  const failedSources = [];
+  if (!publicCatalog) failedSources.push("curated catalog");
+  if (!firstPartyCatalog) failedSources.push("Caramel releases");
+  const notice = failedSources.length
+    ? `${failedSources.join(" and ")} could not be checked. Available catalog entries are still shown.`
+    : "";
+  return mergeCatalogs(publicCatalog, firstPartyCatalog, notice);
 }
 
 export async function loadPackage(fetchImpl = globalThis.fetch, packageName) {

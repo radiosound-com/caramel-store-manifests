@@ -7,7 +7,7 @@ import {
   errorMessage,
   formatBytes,
   labelFor,
-  loadCatalog,
+  loadCombinedCatalog,
   loadPackage,
   catalogViewModel,
   safeHttpsUrl,
@@ -56,6 +56,21 @@ function safeMetadataImage(href, alt = "", className = "app-icon") {
   image.decoding = "async";
   image.referrerPolicy = "no-referrer";
   return image;
+}
+
+function appIcon(entry, className = "app-icon") {
+  const image = safeMetadataImage(entry.metadata?.icon_url, `${entryDisplayName(entry)} icon`, className);
+  if (image) {
+    image.addEventListener("error", () => image.replaceWith(appIconFallback(entry, className)));
+    return image;
+  }
+  return appIconFallback(entry, className);
+}
+
+function appIconFallback(entry, className) {
+  const fallback = createElement("span", `${className} app-icon-fallback`, entryDisplayName(entry).slice(0, 1).toUpperCase());
+  fallback.setAttribute("aria-label", `${entryDisplayName(entry)} icon`);
+  return fallback;
 }
 
 function entryDisplayName(entry) {
@@ -137,10 +152,10 @@ function entryCard(entry, stale) {
   const id = createElement("div", "app-id", text(entry.package_name));
   titleBlock.append(link, id);
   const identity = createElement("div", "card-identity");
-  const icon = safeMetadataImage(entry.metadata?.icon_url);
-  if (icon) identity.append(icon);
+  identity.append(appIcon(entry));
   identity.append(titleBlock);
-  top.append(identity, createElement("span", `badge${stale ? " stale" : ""}`, stale ? "Stale data" : "Reviewed"));
+  const label = entry.first_party ? "Caramel release" : stale ? "Stale data" : "Reviewed";
+  top.append(identity, createElement("span", `badge${entry.first_party ? " first-party" : stale ? " stale" : ""}`, label));
   card.append(top);
 
   const findings = entry.manifest_findings || {};
@@ -152,9 +167,16 @@ function entryCard(entry, stale) {
     createElement("span", null, versionLabel(entry)),
     createElement("span", null, formatBytes(entry.downloaded_size)),
   );
-  const detailLink = createElement("a", "card-arrow", "View package →");
+  if (entry.metadata?.categories?.length) {
+    meta.append(createElement("span", null, entry.metadata.categories[0]));
+  }
+  const actions = createElement("div", "card-actions");
+  const detailLink = createElement("a", "button-link secondary", "View details");
   detailLink.href = link.href;
-  card.append(meta, detailLink);
+  actions.append(detailLink);
+  const apk = safeExternalLink(entry.canonical_apk_url || entry.apk_url, "Download APK", "button-link");
+  if (apk) actions.append(apk);
+  card.append(meta, actions);
   return card;
 }
 
@@ -164,12 +186,15 @@ function renderCatalog(catalog) {
 
   const hero = createElement("section", "hero");
   hero.append(
-    createElement("p", "eyebrow", "Caramel Vanilla"),
-    createElement("h1", null, "A calmer app catalog."),
-    createElement("p", null, "Browse applications reviewed for the Caramel Vanilla in-car experience, with links back to their upstream sources."),
+    createElement("p", "eyebrow", "Caramel Vanilla · Applications"),
+    createElement("h1", null, "Apps for the road ahead."),
+    createElement("p", null, "Browse Automotive apps reviewed for Caramel Vanilla, plus signed releases maintained by Radio Sound."),
   );
   app.append(hero);
 
+  if (model.notice) {
+    app.append(createElement("aside", "freshness-banner", model.notice));
+  }
   const freshness = freshnessBanner(catalog);
   if (freshness) app.append(freshness);
 
@@ -303,20 +328,29 @@ function renderDetailView(entry, catalog) {
   const heading = createElement("div", "detail-heading");
   const titleBlock = createElement("div");
   titleBlock.append(
-    createElement("p", "eyebrow", "Reviewed application"),
+    createElement("p", "eyebrow", entry.first_party ? "Caramel release" : "Reviewed application"),
     createElement("h1", null, entryDisplayName(entry)),
     createElement("div", "app-id", text(entry.package_name)),
   );
   const identity = createElement("div", "detail-identity");
-  const icon = safeMetadataImage(metadata.icon_url, "", "app-icon app-icon-large");
-  if (icon) identity.append(icon);
+  identity.append(appIcon(entry, "app-icon app-icon-large"));
   identity.append(titleBlock);
-  heading.append(identity, createElement("span", "badge", "Reviewed"), freshnessStamp(catalog));
+  const badge = createElement("span", `badge${entry.first_party ? " first-party" : ""}`, entry.first_party ? "Caramel release" : "Reviewed upstream");
+  heading.append(identity, badge, freshnessStamp(catalog));
   card.append(heading);
 
   const findings = model.findings;
   const intro = metadata.summary || findings.summary || findings.description || entry.summary;
   if (intro) card.append(createElement("p", "detail-intro", intro));
+
+  const actions = createElement("div", "detail-actions");
+  const apk = safeExternalLink(entry.canonical_apk_url || entry.apk_url, "Download APK", "button-link");
+  if (apk) actions.append(apk);
+  for (const item of upstreamEntries(entry.upstream_urls || {}).slice(0, 1)) {
+    const link = safeExternalLink(item.url, "View source", "button-link secondary");
+    if (link) actions.append(link);
+  }
+  if (actions.childElementCount) card.append(actions);
 
   const details = createElement("div", "detail-grid");
   const detailFields = [
@@ -336,7 +370,7 @@ async function renderCatalogPage() {
   const request = ++requestNumber;
   showState("Finding approved applications…", "Checking the latest public catalog revision.");
   try {
-    const catalog = await loadCatalog();
+    const catalog = await loadCombinedCatalog();
     if (request !== requestNumber) return;
     catalogCache = catalog;
     renderCatalog(catalog);
@@ -349,9 +383,15 @@ async function renderCatalogPage() {
 async function renderDetail(packageName) {
   const request = ++requestNumber;
   showState("Loading package…", "Fetching the published package details.");
-  const catalogPromise = catalogCache ? Promise.resolve(catalogCache) : loadCatalog().catch(() => null);
+  const catalogPromise = catalogCache ? Promise.resolve(catalogCache) : loadCombinedCatalog().catch(() => null);
   try {
-    const [entry, catalog] = await Promise.all([loadPackage(globalThis.fetch, packageName), catalogPromise]);
+    const [catalog, apiEntry] = await Promise.all([catalogPromise, loadPackage(globalThis.fetch, packageName).catch(() => null)]);
+    const entry = catalog?.entries?.find((candidate) => candidate.package_name === packageName) || apiEntry;
+    if (!entry) {
+      const error = new Error("Package not found");
+      error.status = 404;
+      throw error;
+    }
     if (request !== requestNumber) return;
     renderDetailView(entry, catalog);
   } catch (error) {
