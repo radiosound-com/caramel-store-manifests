@@ -49,6 +49,12 @@ export function versionLabel(entry) {
   return text(version || code, "Version unavailable");
 }
 
+export function statusLabel(entry, stale = false) {
+  if (entry?.first_party) return "Caramel release";
+  if (stale) return "Stale data";
+  return "";
+}
+
 export function formatDate(value) {
   const date = new Date(value);
   if (!value || Number.isNaN(date.getTime())) return "Unknown";

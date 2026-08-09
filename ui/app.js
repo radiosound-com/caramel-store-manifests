@@ -11,6 +11,7 @@ import {
   loadPackage,
   catalogViewModel,
   safeHttpsUrl,
+  statusLabel,
   text,
   upstreamEntries,
   versionLabel,
@@ -71,6 +72,13 @@ function appIconFallback(entry, className) {
   const fallback = createElement("span", `${className} app-icon-fallback`, entryDisplayName(entry).slice(0, 1).toUpperCase());
   fallback.setAttribute("aria-label", `${entryDisplayName(entry)} icon`);
   return fallback;
+}
+
+function entryBadge(entry, stale = false) {
+  const label = statusLabel(entry, stale);
+  if (!label) return null;
+  const badge = createElement("span", `badge${entry.first_party ? " first-party" : stale ? " stale" : ""}`, label);
+  return badge;
 }
 
 function entryDisplayName(entry) {
@@ -154,8 +162,9 @@ function entryCard(entry, stale) {
   const identity = createElement("div", "card-identity");
   identity.append(appIcon(entry));
   identity.append(titleBlock);
-  const label = entry.first_party ? "Caramel release" : stale ? "Stale data" : "Reviewed";
-  top.append(identity, createElement("span", `badge${entry.first_party ? " first-party" : stale ? " stale" : ""}`, label));
+  top.append(identity);
+  const badge = entryBadge(entry, stale);
+  if (badge) top.append(badge);
   card.append(top);
 
   const findings = entry.manifest_findings || {};
@@ -188,7 +197,7 @@ function renderCatalog(catalog) {
   hero.append(
     createElement("p", "eyebrow", "Caramel Vanilla · Applications"),
     createElement("h1", null, "Apps for the road ahead."),
-    createElement("p", null, "Browse Automotive apps reviewed for Caramel Vanilla, plus signed releases maintained by Radio Sound."),
+    createElement("p", null, "Browse Automotive apps and signed releases maintained by Radio Sound."),
   );
   app.append(hero);
 
@@ -327,16 +336,18 @@ function renderDetailView(entry, catalog) {
   const card = createElement("article", "detail-card");
   const heading = createElement("div", "detail-heading");
   const titleBlock = createElement("div");
+  if (entry.first_party) titleBlock.append(createElement("p", "eyebrow", "Caramel release"));
   titleBlock.append(
-    createElement("p", "eyebrow", entry.first_party ? "Caramel release" : "Reviewed application"),
     createElement("h1", null, entryDisplayName(entry)),
     createElement("div", "app-id", text(entry.package_name)),
   );
   const identity = createElement("div", "detail-identity");
   identity.append(appIcon(entry, "app-icon app-icon-large"));
   identity.append(titleBlock);
-  const badge = createElement("span", `badge${entry.first_party ? " first-party" : ""}`, entry.first_party ? "Caramel release" : "Reviewed upstream");
-  heading.append(identity, badge, freshnessStamp(catalog));
+  heading.append(identity);
+  const badge = entryBadge(entry, model.freshness.stale);
+  if (badge) heading.append(badge);
+  heading.append(freshnessStamp(catalog));
   card.append(heading);
 
   const findings = model.findings;
