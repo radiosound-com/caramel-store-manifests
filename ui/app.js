@@ -15,7 +15,7 @@ import {
   text,
   upstreamEntries,
   versionLabel,
-} from "./app-core.mjs";
+} from "./app-core.mjs?v=20260808-4";
 
 const app = document.querySelector("#app");
 let catalogCache = null;
