@@ -92,6 +92,14 @@ export function safeHttpsUrl(value) {
   }
 }
 
+export function cacheBustedUrl(value, revision) {
+  const url = safeHttpsUrl(value);
+  if (!url || revision === undefined || revision === null || revision === "") return url;
+  const parsed = new URL(url);
+  parsed.searchParams.set("caramel_revision", String(revision));
+  return parsed.href;
+}
+
 export function labelFor(key) {
   return String(key)
     .replace(/([a-z])([A-Z])/g, "$1 $2")

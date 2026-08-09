@@ -1,6 +1,7 @@
 import {
   CAPABILITIES,
   CAPABILITY_EXPLANATIONS,
+  cacheBustedUrl,
   classifyError,
   detailViewModel,
   displayValue,
@@ -15,7 +16,7 @@ import {
   text,
   upstreamEntries,
   versionLabel,
-} from "./app-core.mjs?v=20260808-4";
+} from "./app-core.mjs?v=20260809-1";
 
 const app = document.querySelector("#app");
 let catalogCache = null;
@@ -46,8 +47,8 @@ function safeExternalLink(href, label, className = "inline-link") {
   return link;
 }
 
-function safeMetadataImage(href, alt = "", className = "app-icon") {
-  const url = safeHttpsUrl(href);
+function safeMetadataImage(href, alt = "", className = "app-icon", revision = "") {
+  const url = cacheBustedUrl(href, revision);
   if (!url) return null;
   const image = document.createElement("img");
   image.className = className;
@@ -286,7 +287,7 @@ function renderCapabilities(findings) {
   return section;
 }
 
-function renderMetadataDetails(metadata) {
+function renderMetadataDetails(metadata, revision = "") {
   const sections = [];
   if (metadata.description) {
     const section = createElement("section", "detail-section");
@@ -294,7 +295,7 @@ function renderMetadataDetails(metadata) {
     sections.push(section);
   }
   const screenshots = Array.isArray(metadata.screenshot_urls)
-    ? metadata.screenshot_urls.map((url, index) => safeMetadataImage(url, `Screenshot ${index + 1}`, "app-screenshot")).filter(Boolean)
+    ? metadata.screenshot_urls.map((url, index) => safeMetadataImage(url, `Screenshot ${index + 1}`, "app-screenshot", revision)).filter(Boolean)
     : [];
   if (screenshots.length) {
     const section = createElement("section", "detail-section");
@@ -330,6 +331,11 @@ function renderUpstreamLinks(entry) {
 function renderDetailView(entry, catalog) {
   const model = detailViewModel(entry, catalog);
   const metadata = model.metadata;
+  const screenshotRevision = catalog?.generated_at
+    || entry?.sha256
+    || entry?.version_code
+    || entry?.manifest_findings?.version_code
+    || "";
   clearApp();
   const back = createElement("a", "back-link", "← Back to catalog");
   back.href = "#/";
@@ -375,7 +381,7 @@ function renderDetailView(entry, catalog) {
   if (Array.isArray(metadata.categories) && metadata.categories.length) detailFields.push(field("Category", metadata.categories.join(", ")));
   if (metadata.license) detailFields.push(field("License", metadata.license));
   details.append(...detailFields);
-  card.append(details, ...renderMetadataDetails(metadata), renderCapabilities(findings), renderFindings(findings), renderUpstreamLinks(entry));
+  card.append(details, ...renderMetadataDetails(metadata, screenshotRevision), renderCapabilities(findings), renderFindings(findings), renderUpstreamLinks(entry));
   app.append(back, card);
 }
 
