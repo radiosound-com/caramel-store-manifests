@@ -9,17 +9,22 @@ import {
   formatBytes,
   labelFor,
   loadCombinedCatalog,
+  loadRankings,
   loadPackage,
   catalogViewModel,
+  entryRanking,
+  formatDate,
+  isRecentlyUpdated,
   safeHttpsUrl,
   statusLabel,
   text,
   upstreamEntries,
   versionLabel,
-} from "./app-core.mjs?v=20260809-1";
+} from "./app-core.mjs?v=20260809-2";
 
 const app = document.querySelector("#app");
 let catalogCache = null;
+let rankingCache = [];
 let requestNumber = 0;
 
 function clearApp() {
@@ -80,6 +85,10 @@ function entryBadge(entry, stale = false) {
   if (!label) return null;
   const badge = createElement("span", `badge${entry.first_party ? " first-party" : stale ? " stale" : ""}`, label);
   return badge;
+}
+
+function signalBadge(label, className = "") {
+  return createElement("span", `badge signal-badge${className ? ` ${className}` : ""}`, label);
 }
 
 function entryDisplayName(entry) {
@@ -152,7 +161,7 @@ function capabilityList(findings, explain = false) {
   return list;
 }
 
-function entryCard(entry, stale) {
+function entryCard(entry, stale, ranking = null, recent = false) {
   const card = createElement("article", "app-card");
   const top = createElement("div", "card-top");
   const titleBlock = createElement("div");
@@ -164,8 +173,12 @@ function entryCard(entry, stale) {
   identity.append(appIcon(entry));
   identity.append(titleBlock);
   top.append(identity);
+  const badges = createElement("div", "card-badges");
   const badge = entryBadge(entry, stale);
-  if (badge) top.append(badge);
+  if (badge) badges.append(badge);
+  if (recent) badges.append(signalBadge("Updated recently", "recent"));
+  if (ranking) badges.append(signalBadge(`Ranked #${ranking.rank}`, "ranking"));
+  if (badges.childElementCount) top.append(badges);
   card.append(top);
 
   const findings = entry.manifest_findings || {};
@@ -190,8 +203,26 @@ function entryCard(entry, stale) {
   return card;
 }
 
-function renderCatalog(catalog) {
-  const model = catalogViewModel(catalog);
+function discoverySection(title, note, items, stale, rankings = []) {
+  const section = createElement("section", "discovery-section");
+  const heading = createElement("div", "section-heading");
+  heading.append(createElement("h2", null, title));
+  section.append(heading);
+  if (note) section.append(createElement("p", "section-note", note));
+  const grid = createElement("div", "discovery-grid");
+  grid.setAttribute("aria-label", title);
+  for (const item of items) {
+    const entry = item.entry || item;
+    const ranking = item.ranking || entryRanking(entry, rankings);
+    grid.append(entryCard(entry, stale, ranking, isRecentlyUpdated(entry)));
+  }
+  section.append(grid);
+  return section;
+}
+
+function renderCatalog(catalog, rankings = []) {
+  const now = Date.now();
+  const model = catalogViewModel(catalog, "", now, rankings);
   clearApp();
 
   const hero = createElement("section", "hero");
@@ -219,6 +250,31 @@ function renderCatalog(catalog) {
     return;
   }
 
+  if (model.recentEntries.length) {
+    app.append(discoverySection(
+      "Recently updated",
+      "Fresh metadata from the latest signed catalog revision.",
+      model.recentEntries.slice(0, 6),
+      model.freshness.stale,
+      rankings,
+    ));
+  }
+  if (model.rankedEntries.length) {
+    app.append(discoverySection(
+      "Popular with Caramel Store users",
+      "A privacy-preserving signal based on coarse aggregate install activity; exact counts are never shown.",
+      model.rankedEntries.slice(0, 6),
+      model.freshness.stale,
+      rankings,
+    ));
+  } else {
+    app.append(createElement(
+      "aside",
+      "signal-note",
+      "Popularity signals will appear after enough anonymous aggregate install activity is available.",
+    ));
+  }
+
   const toolbar = createElement("div", "toolbar");
   const label = createElement("label", "search-label");
   const search = document.createElement("input");
@@ -238,9 +294,14 @@ function renderCatalog(catalog) {
   app.append(grid);
 
   const draw = () => {
-    const filtered = catalogViewModel(catalog, search.value).visibleEntries;
+    const filtered = catalogViewModel(catalog, search.value, now, rankings).visibleEntries;
     count.textContent = `${filtered.length} application${filtered.length === 1 ? "" : "s"}`;
-    grid.replaceChildren(...filtered.map((entry) => entryCard(entry, model.freshness.stale)));
+    grid.replaceChildren(...filtered.map((entry) => entryCard(
+      entry,
+      model.freshness.stale,
+      entryRanking(entry, rankings),
+      isRecentlyUpdated(entry, now),
+    )));
     if (!filtered.length) grid.append(createElement("p", "state-card", "No applications match that search."));
   };
   search.addEventListener("input", draw);
@@ -380,6 +441,8 @@ function renderDetailView(entry, catalog) {
   ];
   if (Array.isArray(metadata.categories) && metadata.categories.length) detailFields.push(field("Category", metadata.categories.join(", ")));
   if (metadata.license) detailFields.push(field("License", metadata.license));
+  if (metadata.last_updated) detailFields.push(field("Upstream update", formatDate(metadata.last_updated)));
+  if (metadata.ranking) detailFields.push(field("Catalog ranking", `#${metadata.ranking.rank} · ${metadata.ranking.source}`));
   details.append(...detailFields);
   card.append(details, ...renderMetadataDetails(metadata, screenshotRevision), renderCapabilities(findings), renderFindings(findings), renderUpstreamLinks(entry));
   app.append(back, card);
@@ -389,10 +452,14 @@ async function renderCatalogPage() {
   const request = ++requestNumber;
   showState("Finding approved applications…", "Checking the latest public catalog revision.");
   try {
-    const catalog = await loadCombinedCatalog();
+    const [catalog, rankings] = await Promise.all([
+      loadCombinedCatalog(),
+      loadRankings().catch(() => ({ entries: [] })),
+    ]);
     if (request !== requestNumber) return;
     catalogCache = catalog;
-    renderCatalog(catalog);
+    rankingCache = rankings.entries;
+    renderCatalog(catalog, rankingCache);
   } catch (error) {
     if (request !== requestNumber) return;
     showState("We could not load the catalog", errorMessage(error), { error: true, retry: true });

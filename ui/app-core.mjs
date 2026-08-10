@@ -1,4 +1,5 @@
 export const CATALOG_PATH = "/v1/catalog";
+export const RANKINGS_PATH = "/v1/rankings";
 export const FIRST_PARTY_INDEX_PATH = "/fdroid/repo/caramel-index-v1.json";
 export const STALE_AFTER_MS = 48 * 60 * 60 * 1000;
 
@@ -62,6 +63,37 @@ export function formatDate(value) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
+}
+
+export function entryUpdatedAt(entry) {
+  const value = entry?.metadata?.last_updated;
+  const timestamp = value ? new Date(value).getTime() : NaN;
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+export function isRecentlyUpdated(entry, now = Date.now(), maxAgeMs = 30 * 24 * 60 * 60 * 1000) {
+  const updatedAt = entryUpdatedAt(entry);
+  return updatedAt !== null && updatedAt <= now && now - updatedAt <= maxAgeMs;
+}
+
+function validRanking(value) {
+  if (!value || typeof value !== "object") return null;
+  const rank = Number(value.rank);
+  if (!Number.isInteger(rank) || rank < 1 || rank > 1_000_000) return null;
+  return {
+    source: text(value.source, "Caramel Store aggregate"),
+    rank,
+    period: text(value.period, ""),
+  };
+}
+
+export function entryRanking(entry, rankings = []) {
+  const metadataRanking = validRanking(entry?.metadata?.ranking);
+  if (metadataRanking) return metadataRanking;
+  const external = Array.isArray(rankings)
+    ? rankings.find((item) => item?.package_name === entry?.package_name)
+    : null;
+  return validRanking(external ? { ...external, source: external.source || "Caramel Store aggregate" } : null);
 }
 
 export function catalogFreshness(generatedAt, now = Date.now()) {
@@ -129,7 +161,7 @@ export function upstreamEntries(upstreamUrls = {}) {
     .filter((entry) => entry.url);
 }
 
-export function catalogViewModel(catalog, query = "") {
+export function catalogViewModel(catalog, query = "", now = Date.now(), rankings = []) {
   const entries = Array.isArray(catalog?.entries) ? catalog.entries : [];
   const normalizedQuery = String(query).trim().toLowerCase();
   const visibleEntries = entries.filter((entry) => {
@@ -137,10 +169,19 @@ export function catalogViewModel(catalog, query = "") {
     const haystack = `${metadata.display_name || ""} ${metadata.summary || ""} ${entry.name || ""} ${entry.app_name || ""} ${entry.package_name || ""} ${versionLabel(entry)}`.toLowerCase();
     return haystack.includes(normalizedQuery);
   });
+  const recentEntries = entries
+    .filter((entry) => isRecentlyUpdated(entry, now))
+    .sort((left, right) => entryUpdatedAt(right) - entryUpdatedAt(left));
+  const rankedEntries = entries
+    .map((entry) => ({ entry, ranking: entryRanking(entry, rankings) }))
+    .filter((item) => item.ranking)
+    .sort((left, right) => left.ranking.rank - right.ranking.rank);
   return {
     entries,
     visibleEntries,
-    freshness: catalogFreshness(catalog?.generated_at),
+    recentEntries,
+    rankedEntries,
+    freshness: catalogFreshness(catalog?.generated_at, now),
     source: text(catalog?.source, "Public catalog"),
   };
 }
@@ -225,6 +266,14 @@ export async function loadCatalog(fetchImpl = globalThis.fetch) {
     throw new ApiError("The catalog API returned an invalid catalog.");
   }
   return catalog;
+}
+
+export async function loadRankings(fetchImpl = globalThis.fetch) {
+  const rankings = await requestJson(fetchImpl, RANKINGS_PATH);
+  if (!rankings || !Array.isArray(rankings.entries)) {
+    throw new ApiError("The rankings API returned an invalid response.");
+  }
+  return rankings;
 }
 
 export async function loadFirstPartyCatalog(fetchImpl = globalThis.fetch) {

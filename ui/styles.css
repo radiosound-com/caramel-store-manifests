@@ -161,6 +161,24 @@ h3 { font-size: 1.15rem; }
   gap: 1.15rem;
 }
 
+.discovery-section { margin: 2rem 0 2.4rem; }
+.section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.discovery-section .section-note { margin: 0.65rem 0 1rem; }
+.discovery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  gap: 1rem;
+}
+.signal-note {
+  margin: 1.75rem 0;
+  padding: 0.9rem 1rem;
+  color: var(--muted);
+  border: 1px dashed var(--line);
+  border-radius: 0.8rem;
+  background: rgba(255, 253, 249, 0.7);
+  font-size: 0.9rem;
+}
+
 .app-card, .state-card, .detail-card {
   border: 1px solid var(--line);
   border-radius: 1.25rem;
@@ -179,6 +197,7 @@ h3 { font-size: 1.15rem; }
 .app-card a { text-decoration: none; }
 .app-card p { color: var(--muted); line-height: 1.55; margin-bottom: 1.2rem; }
 .card-top { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
+.card-badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.35rem; }
 .card-identity, .detail-identity { display: flex; align-items: flex-start; gap: 0.8rem; min-width: 0; }
 .app-icon { width: 4.25rem; height: 4.25rem; flex: 0 0 auto; border: 1px solid var(--line); border-radius: 1rem; object-fit: cover; background: #fff4e5; }
 .app-icon-large { width: 6rem; height: 6rem; border-radius: 1.35rem; }
@@ -186,6 +205,8 @@ h3 { font-size: 1.15rem; }
 .app-id { margin-top: 0.35rem; color: var(--muted); font-size: 0.78rem; overflow-wrap: anywhere; }
 .badge { padding: 0.38rem 0.65rem; border-radius: 999px; color: var(--caramel-dark); background: #ffe9d1; font-size: 0.72rem; font-weight: 800; white-space: nowrap; }
 .badge.first-party { color: #765019; background: #fff0ba; }
+.badge.signal-badge.recent { color: #3f6548; background: #e5f1e6; }
+.badge.signal-badge.ranking { color: #765019; background: #fff0bf; }
 .card-meta { display: flex; flex-wrap: wrap; gap: 0.45rem 0.8rem; margin-top: auto; color: var(--muted); font-size: 0.82rem; }
 .card-actions, .detail-actions { display: flex; flex-wrap: wrap; gap: 0.65rem; }
 .card-actions { margin-top: 1.2rem; }

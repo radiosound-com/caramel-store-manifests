@@ -1,0 +1,22 @@
+# Public, credential-free aggregate ranking signals.
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: caramel-store-rankings
+  namespace: caramel-store
+  labels:
+    app.kubernetes.io/part-of: caramel-vanilla
+    app.kubernetes.io/component: store
+    app.kubernetes.io/name: caramel-store
+spec:
+  host: caramel-vanilla-store.apps.radiosound.com
+  path: /v1/rankings
+  to:
+    kind: Service
+    name: caramel-store
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

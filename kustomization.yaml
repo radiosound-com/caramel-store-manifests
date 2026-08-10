@@ -9,6 +9,8 @@ resources:
   - 40-service.yaml
   - 60-route-public.example.yaml
   - 61-route-import.example.yaml
+  - 62-route-rankings.yaml
+  - 63-route-metrics.yaml
   - 70-deployment.yaml
   - 80-servicemonitor.yaml
   - 90-ui-service.yaml
