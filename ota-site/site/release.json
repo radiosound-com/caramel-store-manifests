@@ -37,6 +37,12 @@
   },
   "update_mode": "physical-ab-update-engine",
   "ota_partitions": ["boot", "system", "vendor"],
+  "developer_access": {
+    "adb_tcp_enabled_by_default": true,
+    "adb_tcp_port": 5555,
+    "adb_root_available": true,
+    "warning": "Developer convenience only: keep the device on a trusted bench network and do not expose TCP port 5555 to the public internet or an untrusted network."
+  },
   "warning": "For developers and DIYers interested in hacking around. This is a rough alpha userdebug release, not prime time for use in a car. Test on a bench or spare drive, back up userdata first, and keep a known-good image available.",
   "known_limits": [
     "The A/B update path is experimental and is not an in-car safety system.",

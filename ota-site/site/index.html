@@ -12,7 +12,7 @@
   <div class="shell">
     <header>
       <div class="brand"><span class="mark" aria-hidden="true"></span><span>Caramel Vanilla</span></div>
-      <nav aria-label="Page navigation"><a href="#install">Install</a><a href="#compatibility">Compatibility</a><a href="#download">Downloads</a><a href="#faq">FAQ</a><a href="/credits.html">Credits</a><a href="https://github.com/radiosound-com/caramel-vanilla-manifest">Source</a></nav>
+      <nav aria-label="Page navigation"><a href="#install">Install</a><a href="#compatibility">Compatibility</a><a href="#developer-access">ADB &amp; root</a><a href="#download">Downloads</a><a href="#faq">FAQ</a><a href="/credits.html">Credits</a><a href="https://github.com/radiosound-com/caramel-vanilla-manifest">Source</a></nav>
     </header>
 
     <main>
@@ -75,6 +75,17 @@
         </div>
       </section>
 
+      <section class="section" id="developer-access">
+        <p class="eyebrow">Developer access · intentionally open</p>
+        <h2>ADB and root are available out of the box.</h2>
+        <p class="section-intro">This trial image is built for bench hacking: ADB is enabled over TCP on port 5555 by default, and the userdebug build supports restarting ADB as root.</p>
+        <div class="card">
+          <h3>Connect from a trusted development network</h3>
+          <p><code>adb connect &lt;pi-ip&gt;:5555</code>, then use <code>adb root</code> and <code>adb shell</code> for root-level development access.</p>
+          <p class="compatibility-note">This is a deliberate developer convenience, not a production security posture. Do not expose port 5555 to the public internet or an untrusted network; keep the Pi on an isolated bench LAN while using this alpha build.</p>
+        </div>
+      </section>
+
       <section class="section" id="download">
         <p class="eyebrow">Current matrix · 2026.08.12-ab1</p>
         <h2>Pick the hardware you actually have.</h2>
@@ -114,6 +125,7 @@
         <div class="faq-list">
           <details><summary>Is this ready to use in a car?</summary><p>No. It is a rough alpha userdebug build for developers and DIYers on a bench or spare drive. It is not a safety system, and it has not had production vehicle validation.</p></details>
           <details><summary>What leaves the device?</summary><p>The public site itself has no sign-in, forms, analytics, or third-party scripts. On the device, network-capable apps such as map and app-catalog services may connect to their own services when you use them. Review each app’s settings and permissions before connecting it to a network.</p></details>
+          <details><summary>Is developer ADB enabled?</summary><p>Yes. ADB listens over TCP on port 5555 by default, and these userdebug images support <code>adb root</code>. Connect only from a trusted bench network; do not expose the device or port 5555 to the public internet or an untrusted network.</p></details>
           <details><summary>Is voice processing local?</summary><p>The captured developer profile uses local recognition and local speech synthesis. Treat this as a capability of the trial profile, not a blanket promise for every future model or command integration; inspect the build’s voice configuration before using it with sensitive audio.</p></details>
           <details><summary>What should I back up?</summary><p>Back up anything on the target drive before flashing. Keep the original image, SHA-256 manifest, serial or recovery access, and a known-good bootable drive while testing the A/B path.</p></details>
           <details><summary>Where do I report a problem?</summary><p>Start with the <a href="https://github.com/radiosound-com/caramel-vanilla-manifest/issues">manifest issue tracker</a> and include the exact matrix variant, image version, peripherals, and reproduction steps. Do not include private logs or credentials.</p></details>
