@@ -44,8 +44,10 @@ h1 { font-size: clamp(3.2rem, 8vw, 6.8rem); line-height: .94; letter-spacing: -.
 .quickstart-steps { counter-reset: start; list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
 .quickstart-steps li { counter-increment: start; display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-items: start; }
 .quickstart-steps li::before { content: counter(start); display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--peach); color: var(--cocoa); font-weight: 900; }
+.quickstart-steps li > div { min-width: 0; }
 .quickstart-steps strong { display: block; }
 .quickstart-steps span { display: block; color: #e5c9af; font-size: .9rem; }
+.quickstart-steps code { overflow-wrap: anywhere; }
 .quickstart a { color: var(--peach); }
 .quickstart-action { display: grid; align-content: center; gap: 10px; padding: 22px; border-radius: 18px; background: #40261f; }
 .quickstart-action strong { font-size: 1.25rem; }
