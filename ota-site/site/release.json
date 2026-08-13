@@ -14,7 +14,7 @@
     "board": "Raspberry Pi 5",
     "ram_gb": [4, 16],
     "storage": ["NVMe", "SD card"],
-    "display": ["Waveshare 10.1-inch", "HDMI"],
+    "display": ["Waveshare 10.1inch DSI LCD (C)", "HDMI"],
     "audio": "USB",
     "pcie_gen": 3
   },
@@ -49,7 +49,7 @@
       "variant": "4gb-nvme-waveshare",
       "ram_gb": 4,
       "storage": "NVMe",
-      "display": "Waveshare 10.1-inch",
+      "display": "Waveshare 10.1inch DSI LCD (C)",
       "audio": "USB",
       "target": "aosp_rpi5_car_4gb_nvme_waveshare",
       "artifacts": {
@@ -107,7 +107,7 @@
       "variant": "4gb-sd-waveshare",
       "ram_gb": 4,
       "storage": "SD card",
-      "display": "Waveshare 10.1-inch",
+      "display": "Waveshare 10.1inch DSI LCD (C)",
       "audio": "USB",
       "target": "aosp_rpi5_car_4gb_sd_waveshare",
       "artifacts": {
@@ -165,7 +165,7 @@
       "variant": "16gb-nvme-waveshare",
       "ram_gb": 16,
       "storage": "NVMe",
-      "display": "Waveshare 10.1-inch",
+      "display": "Waveshare 10.1inch DSI LCD (C)",
       "audio": "USB",
       "target": "aosp_rpi5_car_16gb_nvme_waveshare",
       "artifacts": {
@@ -223,7 +223,7 @@
       "variant": "16gb-sd-waveshare",
       "ram_gb": 16,
       "storage": "SD card",
-      "display": "Waveshare 10.1-inch",
+      "display": "Waveshare 10.1inch DSI LCD (C)",
       "audio": "USB",
       "target": "aosp_rpi5_car_16gb_sd_waveshare",
       "artifacts": {
