@@ -1,0 +1,287 @@
+{
+  "schema_version": 2,
+  "product": "caramel-vanilla",
+  "channel": "alpha",
+  "status": "developer-trial",
+  "published_at": "2026-08-13T02:27:51Z",
+  "version": "2026.08.12-ab1",
+  "build_id": "13e6d76-ab1",
+  "source_revision": "13e6d76",
+  "build_host": "build@192.168.1.176",
+  "fallback_build_host": "build@192.168.1.153",
+  "product_target": "matrix",
+  "hardware": {
+    "board": "Raspberry Pi 5",
+    "ram_gb": [4, 16],
+    "storage": ["NVMe", "SD card"],
+    "display": ["Waveshare 10.1-inch", "HDMI"],
+    "audio": "USB",
+    "pcie_gen": 3
+  },
+  "layout": {
+    "partition_table": "GPT",
+    "slots": ["a", "b"],
+    "logical_image_bytes": 10737418240,
+    "fixed_partitions": {
+      "boot_a": 134217728,
+      "boot_b": 134217728,
+      "system_a": 3221225472,
+      "system_b": 3221225472,
+      "vendor_a": 402653184,
+      "vendor_b": 402653184,
+      "misc": 16777216
+    },
+    "userdata_seed_bytes": 3203382784,
+    "userdata_partition": "userdata",
+    "userdata_expands_to_drive": true
+  },
+  "update_mode": "physical-ab-update-engine",
+  "ota_partitions": ["boot", "system", "vendor"],
+  "warning": "For developers and DIYers interested in hacking around. This is a rough alpha userdebug release, not prime time for use in a car. Test on a bench or spare drive, back up userdata first, and keep a known-good image available.",
+  "known_limits": [
+    "The A/B update path is experimental and is not an in-car safety system.",
+    "Images are userdebug development software with permissive SELinux.",
+    "PCIe Gen 3 remains experimental on NVMe profiles; use Gen 2 if the link is unstable.",
+    "Many vehicle integrations, validation tests, hardening tasks, and recovery workflows are still missing and will be added over time."
+  ],
+  "images": [
+    {
+      "variant": "4gb-nvme-waveshare",
+      "ram_gb": 4,
+      "storage": "NVMe",
+      "display": "Waveshare 10.1-inch",
+      "audio": "USB",
+      "target": "aosp_rpi5_car_4gb_nvme_waveshare",
+      "artifacts": {
+        "full_image": {
+          "name": "rpi5-caramel-vanilla-4gb-nvme-waveshare-20260812-ab1.img.gz",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/4gb-nvme-waveshare/rpi5-caramel-vanilla-4gb-nvme-waveshare-20260812-ab1.img.gz",
+          "sha256": "e4534cf3be85e466e1194d8fe630c69acec74dd432b5441337427118bdcf2201",
+          "compressed_bytes": 2716271723,
+          "logical_bytes": 10737418240
+        },
+        "ota_package": {
+          "name": "rpi5-caramel-vanilla-4gb-nvme-waveshare-20260812-ab1.ota.zip",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/4gb-nvme-waveshare/rpi5-caramel-vanilla-4gb-nvme-waveshare-20260812-ab1.ota.zip",
+          "sha256": "0e93fd915da0f095b1d1806966e2a765cf90378cee2c58a1513c4db398339826",
+          "bytes": 1124274180
+        },
+        "build_info": {
+          "name": "rpi5-caramel-vanilla-4gb-nvme-waveshare-20260812-ab1.BUILDINFO.txt",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/4gb-nvme-waveshare/rpi5-caramel-vanilla-4gb-nvme-waveshare-20260812-ab1.BUILDINFO.txt",
+          "sha256": "21919dee3a8a4f8ea1a551d1b46f341d7d275afd18d8c12f7378029b0501ff7e",
+          "bytes": 778
+        }
+      }
+    },
+    {
+      "variant": "4gb-nvme-hdmi",
+      "ram_gb": 4,
+      "storage": "NVMe",
+      "display": "HDMI",
+      "audio": "USB",
+      "target": "aosp_rpi5_car_4gb_nvme_hdmi",
+      "artifacts": {
+        "full_image": {
+          "name": "rpi5-caramel-vanilla-4gb-nvme-hdmi-20260812-ab1.img.gz",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/4gb-nvme-hdmi/rpi5-caramel-vanilla-4gb-nvme-hdmi-20260812-ab1.img.gz",
+          "sha256": "e8302fb4f2fc080715d1d0c5963f4f36774140ed89313cb4f8b6923c6e7fce4f",
+          "compressed_bytes": 2716243508,
+          "logical_bytes": 10737418240
+        },
+        "ota_package": {
+          "name": "rpi5-caramel-vanilla-4gb-nvme-hdmi-20260812-ab1.ota.zip",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/4gb-nvme-hdmi/rpi5-caramel-vanilla-4gb-nvme-hdmi-20260812-ab1.ota.zip",
+          "sha256": "261689b2d3e024f1f72fae2cb8ff7d613e295a1774af30b999fe17bd2dd047b8",
+          "bytes": 1124301269
+        },
+        "build_info": {
+          "name": "rpi5-caramel-vanilla-4gb-nvme-hdmi-20260812-ab1.BUILDINFO.txt",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/4gb-nvme-hdmi/rpi5-caramel-vanilla-4gb-nvme-hdmi-20260812-ab1.BUILDINFO.txt",
+          "sha256": "a1d12d393a57a1b3704d4a9252833afe70894f83f8c5aa18cfc3f09aac5b4c4d",
+          "bytes": 758
+        }
+      }
+    },
+    {
+      "variant": "4gb-sd-waveshare",
+      "ram_gb": 4,
+      "storage": "SD card",
+      "display": "Waveshare 10.1-inch",
+      "audio": "USB",
+      "target": "aosp_rpi5_car_4gb_sd_waveshare",
+      "artifacts": {
+        "full_image": {
+          "name": "rpi5-caramel-vanilla-4gb-sd-waveshare-20260812-ab1.img.gz",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/4gb-sd-waveshare/rpi5-caramel-vanilla-4gb-sd-waveshare-20260812-ab1.img.gz",
+          "sha256": "42f91c2fde2979a5e21547a0d94b2ec4b05fb50d2279a1bdc5db919a4c3d7958",
+          "compressed_bytes": 2716225405,
+          "logical_bytes": 10737418240
+        },
+        "ota_package": {
+          "name": "rpi5-caramel-vanilla-4gb-sd-waveshare-20260812-ab1.ota.zip",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/4gb-sd-waveshare/rpi5-caramel-vanilla-4gb-sd-waveshare-20260812-ab1.ota.zip",
+          "sha256": "533a68a02a0507c7f5e42fbe65fbde805c8a7a486c2fbe73ed2b8e740cec3e56",
+          "bytes": 1124274360
+        },
+        "build_info": {
+          "name": "rpi5-caramel-vanilla-4gb-sd-waveshare-20260812-ab1.BUILDINFO.txt",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/4gb-sd-waveshare/rpi5-caramel-vanilla-4gb-sd-waveshare-20260812-ab1.BUILDINFO.txt",
+          "sha256": "842c9d44177de0d31a79bc2ab4c5a7cfc3610fe5bb397773b6539d25943fc84a",
+          "bytes": 772
+        }
+      }
+    },
+    {
+      "variant": "4gb-sd-hdmi",
+      "ram_gb": 4,
+      "storage": "SD card",
+      "display": "HDMI",
+      "audio": "USB",
+      "target": "aosp_rpi5_car_4gb_sd_hdmi",
+      "artifacts": {
+        "full_image": {
+          "name": "rpi5-caramel-vanilla-4gb-sd-hdmi-20260812-ab1.img.gz",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/4gb-sd-hdmi/rpi5-caramel-vanilla-4gb-sd-hdmi-20260812-ab1.img.gz",
+          "sha256": "d229d30bc58e514fa48960fabd03ebbb702b076122d2174f6312c9ca421abd23",
+          "compressed_bytes": 2716264132,
+          "logical_bytes": 10737418240
+        },
+        "ota_package": {
+          "name": "rpi5-caramel-vanilla-4gb-sd-hdmi-20260812-ab1.ota.zip",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/4gb-sd-hdmi/rpi5-caramel-vanilla-4gb-sd-hdmi-20260812-ab1.ota.zip",
+          "sha256": "4f9c1b74bb8637a14220e593d0761ac009e851551cfb88c369485261473a8bca",
+          "bytes": 1124301545
+        },
+        "build_info": {
+          "name": "rpi5-caramel-vanilla-4gb-sd-hdmi-20260812-ab1.BUILDINFO.txt",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/4gb-sd-hdmi/rpi5-caramel-vanilla-4gb-sd-hdmi-20260812-ab1.BUILDINFO.txt",
+          "sha256": "c19913e2ac8f0070eaeab1cc3a6a14b80f9ae7149a8ebd26b439b44df5c76b24",
+          "bytes": 752
+        }
+      }
+    },
+    {
+      "variant": "16gb-nvme-waveshare",
+      "ram_gb": 16,
+      "storage": "NVMe",
+      "display": "Waveshare 10.1-inch",
+      "audio": "USB",
+      "target": "aosp_rpi5_car_16gb_nvme_waveshare",
+      "artifacts": {
+        "full_image": {
+          "name": "rpi5-caramel-vanilla-16gb-nvme-waveshare-20260812-ab1.img.gz",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/16gb-nvme-waveshare/rpi5-caramel-vanilla-16gb-nvme-waveshare-20260812-ab1.img.gz",
+          "sha256": "9f23a9929bf82eb1b3f823fe0d117b96ed824d753622404d5c1a9f123d94c027",
+          "compressed_bytes": 3376866895,
+          "logical_bytes": 10737418240
+        },
+        "ota_package": {
+          "name": "rpi5-caramel-vanilla-16gb-nvme-waveshare-20260812-ab1.ota.zip",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/16gb-nvme-waveshare/rpi5-caramel-vanilla-16gb-nvme-waveshare-20260812-ab1.ota.zip",
+          "sha256": "028b2178e9e346897caac9b5cbbca75edeec8113973cad769844494dd8f10b4b",
+          "bytes": 1449711026
+        },
+        "build_info": {
+          "name": "rpi5-caramel-vanilla-16gb-nvme-waveshare-20260812-ab1.BUILDINFO.txt",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/16gb-nvme-waveshare/rpi5-caramel-vanilla-16gb-nvme-waveshare-20260812-ab1.BUILDINFO.txt",
+          "sha256": "f379a6e22c2168be0d2ed7db389d515cb8aa7058a15b410b58df121aa06e60d6",
+          "bytes": 781
+        }
+      }
+    },
+    {
+      "variant": "16gb-nvme-hdmi",
+      "ram_gb": 16,
+      "storage": "NVMe",
+      "display": "HDMI",
+      "audio": "USB",
+      "target": "aosp_rpi5_car_16gb_nvme_hdmi",
+      "artifacts": {
+        "full_image": {
+          "name": "rpi5-caramel-vanilla-16gb-nvme-hdmi-20260812-ab1.img.gz",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/16gb-nvme-hdmi/rpi5-caramel-vanilla-16gb-nvme-hdmi-20260812-ab1.img.gz",
+          "sha256": "de2f4602421736307dfd17ff635c5b21ff5d12a1bf14a80ba3fe5a8a8af6e9fa",
+          "compressed_bytes": 3376811743,
+          "logical_bytes": 10737418240
+        },
+        "ota_package": {
+          "name": "rpi5-caramel-vanilla-16gb-nvme-hdmi-20260812-ab1.ota.zip",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/16gb-nvme-hdmi/rpi5-caramel-vanilla-16gb-nvme-hdmi-20260812-ab1.ota.zip",
+          "sha256": "a7d6fe557f0cdff2e0d86035b9de7f04488f97006362719d1efc18b95ffe6c18",
+          "bytes": 1449710780
+        },
+        "build_info": {
+          "name": "rpi5-caramel-vanilla-16gb-nvme-hdmi-20260812-ab1.BUILDINFO.txt",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/16gb-nvme-hdmi/rpi5-caramel-vanilla-16gb-nvme-hdmi-20260812-ab1.BUILDINFO.txt",
+          "sha256": "31e48434825cd67b91b54fb0bacc68d8b100d5012b6bea9fe94a16b805422483",
+          "bytes": 761
+        }
+      }
+    },
+    {
+      "variant": "16gb-sd-waveshare",
+      "ram_gb": 16,
+      "storage": "SD card",
+      "display": "Waveshare 10.1-inch",
+      "audio": "USB",
+      "target": "aosp_rpi5_car_16gb_sd_waveshare",
+      "artifacts": {
+        "full_image": {
+          "name": "rpi5-caramel-vanilla-16gb-sd-waveshare-20260812-ab1.img.gz",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/16gb-sd-waveshare/rpi5-caramel-vanilla-16gb-sd-waveshare-20260812-ab1.img.gz",
+          "sha256": "0044fcbff526f8df0dd04129e61f03ffc5126c8d37c3345df6f9a9946198b374",
+          "compressed_bytes": 3376833256,
+          "logical_bytes": 10737418240
+        },
+        "ota_package": {
+          "name": "rpi5-caramel-vanilla-16gb-sd-waveshare-20260812-ab1.ota.zip",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/16gb-sd-waveshare/rpi5-caramel-vanilla-16gb-sd-waveshare-20260812-ab1.ota.zip",
+          "sha256": "af517554df0ddd290d34a3682f8a302acd8c1cb6ddd9d2c932bb8dc5b60dedcc",
+          "bytes": 1449711846
+        },
+        "build_info": {
+          "name": "rpi5-caramel-vanilla-16gb-sd-waveshare-20260812-ab1.BUILDINFO.txt",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/16gb-sd-waveshare/rpi5-caramel-vanilla-16gb-sd-waveshare-20260812-ab1.BUILDINFO.txt",
+          "sha256": "7e58127e4d0ed5c362012d30271ae06b952d408238303e92cb39e155a73555a2",
+          "bytes": 775
+        }
+      }
+    },
+    {
+      "variant": "16gb-sd-hdmi",
+      "ram_gb": 16,
+      "storage": "SD card",
+      "display": "HDMI",
+      "audio": "USB",
+      "target": "aosp_rpi5_car_16gb_sd_hdmi",
+      "artifacts": {
+        "full_image": {
+          "name": "rpi5-caramel-vanilla-16gb-sd-hdmi-20260812-ab1.img.gz",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/16gb-sd-hdmi/rpi5-caramel-vanilla-16gb-sd-hdmi-20260812-ab1.img.gz",
+          "sha256": "2f64fefbab198abe56123490d2cbe4d7d46184934f6f6b998ec065afa4021c86",
+          "compressed_bytes": 3376807337,
+          "logical_bytes": 10737418240
+        },
+        "ota_package": {
+          "name": "rpi5-caramel-vanilla-16gb-sd-hdmi-20260812-ab1.ota.zip",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/16gb-sd-hdmi/rpi5-caramel-vanilla-16gb-sd-hdmi-20260812-ab1.ota.zip",
+          "sha256": "b6ef97e9a50d81d0598b952cc198225a7695b627f091f45c0196dfa1349ba77e",
+          "bytes": 1449711168
+        },
+        "build_info": {
+          "name": "rpi5-caramel-vanilla-16gb-sd-hdmi-20260812-ab1.BUILDINFO.txt",
+          "url": "https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/2026.08.12-ab1/16gb-sd-hdmi/rpi5-caramel-vanilla-16gb-sd-hdmi-20260812-ab1.BUILDINFO.txt",
+          "sha256": "d89133c6506f6a39ac9882913c854a92f93b01f9e6f0078bab9eb056c9bac9e4",
+          "bytes": 755
+        }
+      }
+    }
+  ],
+  "instructions": {
+    "source_repository": "https://github.com/radiosound-com/caramel-vanilla-manifest",
+    "flasher": "https://github.com/radiosound-com/caramel-vanilla-manifest/blob/main/scripts/flash-rpi5-image.sh",
+    "expand_userdata": "https://github.com/radiosound-com/caramel-vanilla-manifest/blob/main/scripts/expand-rpi5-userdata.sh",
+    "ota_notes": "Use the OTA package matching the exact RAM/storage/display variant and apply it through update_engine_client on a booted developer image."
+  }
+}

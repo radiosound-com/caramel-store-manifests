@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: caramel-vanilla-ota-site-budget
+  namespace: caramel-vanilla
+  labels:
+    app.kubernetes.io/part-of: caramel-vanilla
+    app.kubernetes.io/component: ota-site
+spec:
+  hard:
+    count/deployments.apps: "1"
+    count/jobs.batch: "1"
+    limits.cpu: 500m
+    limits.memory: 512Mi
+    pods: "2"
+    requests.cpu: 100m
+    requests.memory: 128Mi
+    services: "2"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: caramel-vanilla-ota-site-container-defaults
+  namespace: caramel-vanilla
+  labels:
+    app.kubernetes.io/part-of: caramel-vanilla
+    app.kubernetes.io/component: ota-site
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 25m
+        memory: 64Mi
+      min:
+        cpu: 5m
+        memory: 32Mi
+      max:
+        cpu: 250m
+        memory: 256Mi

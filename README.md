@@ -140,6 +140,30 @@ revision information to observe scanner and catalog changes.
 - The repository gateway has the same 10m/32Mi request and 100m/128Mi limit,
   verifies its RGW upstream certificate, and contains no object-store secret.
 
+## Caramel Vanilla image trial site
+
+The separate `ota-site/` kustomization publishes the developer/DIY image
+download page at `https://caramel-vanilla.apps.radiosound.com`. The page and its
+captured media are packaged as an immutable nginx image and published to the
+public GitHub Container Registry image
+`ghcr.io/radiosound-com/caramel-vanilla-ota-site`. GitHub Actions builds it from
+`ota-site/Dockerfile`; the Kubernetes deployment pulls the `main` image tag
+while this trial site is iterated. Promote a tested digest before treating the
+site as production infrastructure.
+
+The large image payloads and machine-readable alpha channel manifest are
+published to the existing Rook Ceph RGW update origin and read through:
+
+```text
+https://mrdata.apps.radiosound.com/channels/caramel-vanilla/alpha/
+```
+
+The current Raspberry Pi 5 alpha images use a physical A/B layout with a
+partition-preserving update path and rollback metadata. The update engine,
+boot-control integration, and recovery behavior remain experimental; keep a
+known-good image available and do not treat the trial as an unattended in-car
+update system.
+
 ## Next implementation steps
 
 1. Define the signed import-bundle schema: signature, freshness, provenance,
