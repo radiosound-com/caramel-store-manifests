@@ -301,8 +301,8 @@
   ],
   "instructions": {
     "source_repository": "https://github.com/radiosound-com/caramel-vanilla-manifest",
-    "flasher": "https://github.com/radiosound-com/caramel-vanilla-manifest/blob/main/scripts/flash-rpi5-image.sh",
-    "expand_userdata": "https://github.com/radiosound-com/caramel-vanilla-manifest/blob/main/scripts/expand-rpi5-userdata.sh",
+    "flasher": "https://github.com/radiosound-com/caramel-vanilla-manifest/blob/android-17.0/scripts/flash-rpi5-image.sh",
+    "expand_userdata": "https://github.com/radiosound-com/caramel-vanilla-manifest/blob/android-17.0/scripts/expand-rpi5-userdata.sh",
     "ota_notes": "Use the OTA package matching the exact RAM/storage/display variant and apply it through update_engine_client on a booted developer image."
   },
   "manifest_commit": "baa949cfa01ceb60f74ad8bd669f61c62252564b",
